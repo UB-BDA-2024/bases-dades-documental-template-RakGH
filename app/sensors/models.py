@@ -11,3 +11,8 @@ class Sensor(Base):
     #mac_address = Column(String,unique=True, index=True)
     #latitude = Column(Float)
     #longitude = Column(Float)
+
+
+    #mongo: especificació
+    #redis: last data (longitud i latitud) preferible:(type i macaddress)
+    #sql: estatiques relacionals (nom)
