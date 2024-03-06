@@ -69,7 +69,7 @@ def get_sensor(sensor_id: int, db: Session = Depends(get_db), mongodb_client: Mo
         raise HTTPException(status_code=404, detail="Sensor not found")
     return db_sensor
 
-# 🙋🏽‍♀️ Add here the route to delete a sensor
+# 🙋🏽‍♀️ Add here the route to delete a sensor  Done
 @router.delete("/{sensor_id}")
 def delete_sensor(sensor_id: int, db: Session = Depends(get_db), mongodb_client: MongoDBClient = Depends(get_mongodb_client)):
     db_sensor = repository.get_sensor(db, sensor_id)
@@ -79,7 +79,7 @@ def delete_sensor(sensor_id: int, db: Session = Depends(get_db), mongodb_client:
     return repository.delete_sensor(db=db, sensor_id=sensor_id, mongodb_client=mongodb_client)
     
 
-# 🙋🏽‍♀️ Add here the route to update a sensor
+# 🙋🏽‍♀️ Add here the route to update a sensor Done
 @router.post("/{sensor_id}/data")
 def record_data(sensor_id: int, data: schemas.SensorData,db: Session = Depends(get_db) ,redis_client: RedisClient = Depends(get_redis_client)):
     #raise HTTPException(status_code=404, detail="Not implemented")

@@ -30,7 +30,7 @@ def create_sensor(db: Session, sensor: schemas.SensorCreate, mongodb_client: Ses
     return db_sensor
 
 def record_data(redis: Session, sensor_id: int, data: schemas.SensorData) -> schemas.Sensor:
-    db_sensordata = data
+    db_sensordata = json.dumps(data.dict())
     #data_str = f"{db_sensordata.temperature}/{db_sensordata.humidity}/{db_sensordata.battery_level}/{db_sensordata.last_seen}"
     return redis._client.set(sensor_id, db_sensordata)
 
