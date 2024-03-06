@@ -46,13 +46,13 @@ def get_sensors_near(latitude: float, longitude: float, db: Session = Depends(ge
     #return repository.get_sensors_near(mongodb=mongodb_client, latitude=latitude, longitude=longitude)
 
 
-# 🙋🏽‍♀️ Add here the route to get all sensors
+# 🙋🏽‍♀️ Add here the route to get all sensors  Done
 @router.get("")
 def get_sensors(db: Session = Depends(get_db)):
     return repository.get_sensors(db)
 
 
-# 🙋🏽‍♀️ Add here the route to create a sensor
+# 🙋🏽‍♀️ Add here the route to create a sensor  Done
 @router.post("")
 def create_sensor(sensor: schemas.SensorCreate, db: Session = Depends(get_db), mongodb_client: MongoDBClient = Depends(get_mongodb_client)):
     db_sensor = repository.get_sensor_by_name(db, sensor.name)
@@ -75,8 +75,8 @@ def delete_sensor(sensor_id: int, db: Session = Depends(get_db), mongodb_client:
     db_sensor = repository.get_sensor(db, sensor_id)
     if db_sensor is None:
         raise HTTPException(status_code=404, detail="Sensor not found")
-    raise HTTPException(status_code=404, detail="Not implemented")
- #   return repository.delete_sensor(db=db, sensor_id=sensor_id)
+    #raise HTTPException(status_code=404, detail="Not implemented")
+    return repository.delete_sensor(db=db, sensor_id=sensor_id, mongodb_client=mongodb_client)
     
 
 # 🙋🏽‍♀️ Add here the route to update a sensor

@@ -1,7 +1,7 @@
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
 from typing import List, Optional
-
+import json
 from . import models, schemas
 
 def get_sensor(db: Session, sensor_id: int) -> Optional[models.Sensor]:
@@ -19,7 +19,7 @@ def create_sensor(db: Session, sensor: schemas.SensorCreate, mongodb_client: Ses
     db.commit()
     db.refresh(db_sensor)
     mongodb_client.getDatabase('sensors')
-    mycol = mongodb_client.getCollection('sensors')
+    mycol = mongodb_client.getCollection(str(db_sensor.id))
     mydoc = {
     "latitude": sensor.latitude,
     "longitude": sensor.longitude,
@@ -51,10 +51,13 @@ def get_data(redis: Session, sensor_id: int, sensor_name: str) -> schemas.Sensor
         
     }
 
-def delete_sensor(db: Session, sensor_id: int):
+def delete_sensor(db: Session, sensor_id: int, mongodb_client: Session):
     db_sensor = db.query(models.Sensor).filter(models.Sensor.id == sensor_id).first()
     if db_sensor is None:
         raise HTTPException(status_code=404, detail="Sensor not found")
     db.delete(db_sensor)
     db.commit()
+    mongodb_client.getDatabase('sensors')
+    mycol = mongodb_client.getCollection(str(sensor_id))
+    mycol.drop()
     return db_sensor
