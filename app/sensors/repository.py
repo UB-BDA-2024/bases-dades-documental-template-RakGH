@@ -31,25 +31,19 @@ def create_sensor(db: Session, sensor: schemas.SensorCreate, mongodb_client: Ses
 
 def record_data(redis: Session, sensor_id: int, data: schemas.SensorData) -> schemas.Sensor:
     db_sensordata = json.dumps(data.dict())
-    #data_str = f"{db_sensordata.temperature}/{db_sensordata.humidity}/{db_sensordata.battery_level}/{db_sensordata.last_seen}"
     return redis._client.set(sensor_id, db_sensordata)
 
 
 def get_data(redis: Session, sensor_id: int, sensor_name: str) -> schemas.Sensor:
     #db_sensordata = data
     data_str = redis._client.get(sensor_id)
+    
+    decoded_data =data_str.decode()
+    db_sensordata = json.loads(decoded_data)
+    db_sensordata['id'] = sensor_id
+    db_sensordata['name'] = sensor_name
 
-    db_sensordata = data_str.decode().split("/")
-    return {
-        "id": sensor_id,
-        "name": sensor_name
-        
-        #"temperature": float(db_sensordata[0]),
-        #"humidity": float(db_sensordata[1]),
-        #"battery_level": float(db_sensordata[2]),
-        #"last_seen": db_sensordata[3]
-        
-    }
+    return db_sensordata
 
 def delete_sensor(db: Session, sensor_id: int, mongodb_client: Session):
     db_sensor = db.query(models.Sensor).filter(models.Sensor.id == sensor_id).first()
