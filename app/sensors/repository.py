@@ -18,13 +18,14 @@ def create_sensor(db: Session, sensor: schemas.SensorCreate, mongodb_client: Ses
     db.add(db_sensor)
     db.commit()
     db.refresh(db_sensor)
-    mongodb_client.getDatabase('sensors')
-    mycol = mongodb_client.getCollection(str(db_sensor.id))
+    mongodb_client.getDatabase("mydatabase")
+    mycol = mongodb_client.getCollection("sensors")
     mydoc = {
-    "latitude": sensor.latitude,
-    "longitude": sensor.longitude,
-    "type": sensor.type,
-    "mac_address": sensor.mac_address
+        "id": db_sensor.id,
+        "latitude": sensor.latitude,
+        "longitude": sensor.longitude,
+        "type": sensor.type,
+        "mac_address": sensor.mac_address
     }
     mycol.insert_one(mydoc)
     return db_sensor
@@ -37,7 +38,7 @@ def record_data(redis: Session, sensor_id: int, data: schemas.SensorData) -> sch
 def get_data(redis: Session, sensor_id: int, sensor_name: str) -> schemas.Sensor:
     #db_sensordata = data
     data_str = redis._client.get(sensor_id)
-    
+
     decoded_data =data_str.decode()
     db_sensordata = json.loads(decoded_data)
     db_sensordata['id'] = sensor_id
@@ -51,7 +52,24 @@ def delete_sensor(db: Session, sensor_id: int, mongodb_client: Session):
         raise HTTPException(status_code=404, detail="Sensor not found")
     db.delete(db_sensor)
     db.commit()
-    mongodb_client.getDatabase('sensors')
-    mycol = mongodb_client.getCollection(str(sensor_id))
-    mycol.drop()
+    mongodb_client.getDatabase("mydatabase")
+    mycol = mongodb_client.getCollection("sensors")
+    mycol.delete_one({"id": sensor_id})
     return db_sensor
+
+def get_sensors_near(mongodb: Session, latitude: float, longitude: float, radius: float, db: Session, redis: Session):
+    mongodb.getDatabase("mydatabase")
+    mycol = mongodb.getCollection("sensors")
+    query = {
+        "latitude": {"$gte": latitude - radius, "$lte": latitude + radius},
+        "longitude": {"$gte": longitude - radius, "$lte": longitude + radius}
+    }
+    sensors = mycol.find(query)
+    dataSensors = []
+    for sensor in sensors:
+        db_sensor = get_sensor(db, sensor['id'])
+        data_sensor = get_data(redis, sensor['id'], db_sensor.name)
+        dataSensors.append(data_sensor)
+    
+    return json.dumps(dataSensors, indent=4)
+
